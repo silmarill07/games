@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Santas Math Flight</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a3d62, #1e3799);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            touch-action: manipulation;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-width: 800px;
+            max-height: 600px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Snowflakes */
+        .snowflake {
+            position: absolute;
+            color: #fff;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            user-select: none;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #startScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #c33764, #1d2671);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #gameTitle {
+            font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00;
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-family: 'Mountains of Christmas', cursive;
+        }
+
+        #startButton {
+            padding: 15px 40px;
+            font-size: 1.8rem;
+            background: linear-gradient(to bottom, #ffcc00, #ff9900);
+            border: none;
+            border-radius: 50px;
+            color: #8b0000;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            border: 3px solid #8b0000;
+        }
+
+        #startButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        #gameScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1513151233558-d860c5398176?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80') no-repeat center center;
+            background-size: cover;
+            display: none;
+            flex-direction: column;
+            z-index: 5;
+        }
+
+        #gameUI {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        #timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+        #livesContainer {
+            display: flex;
+            gap: 10px;
+        }
+
+        .heart {
+            width: 30px;
+            height: 30px;
+            background: url('https://cdn-icons-png.flaticon.com/512/833/833472.png') no-repeat center;
+            background-size: contain;
+        }
+
+        #livesCount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffcc00;
+            margin-left: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        #mathProblem {
+            text-align: center;
+            font-size: 3rem;
+            margin: 30px 0;
+            color: #ffcc00;
+            text-shadow: 0 0 5px #000;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #answersContainer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            padding: 0 20px 30px;
+            flex: 1;
+        }
+
+        .answer-btn {
+            background: linear-gradient(to bottom, #ffffff, #e0e0e0);
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e3799;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid #8b0000;
+        }
+
+        .answer-btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95);
+        }
+
+        .answer-btn.correct {
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            color: white;
+        }
+
+        .answer-btn.incorrect {
+            background: linear-gradient(to bottom, #f44336, #c62828);
+            color: white;
+        }
+
+        #gameOverScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #gameOverTitle {
+            font-size: 3rem;
+            color: #ffcc00;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #finalScore {
+            font-size: 2rem;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #restartButton, #exitButton {
+            padding: 12px 30px;
+            font-size: 1.5rem;
+            margin: 10px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #restartButton {
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            color: white;
+            border: 3px solid #2E7D32;
+        }
+
+        #exitButton {
+            background: linear-gradient(to bottom, #f44336, #c62828);
+            color: white;
+            border: 3px solid #c62828;
+        }
+
+        .feedback {
+            position: absolute;
+            font-size: 5rem;
+            font-weight: bold;
+            z-index: 15;
+            animation: floatUp 1.5s forwards;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            #gameContainer {
+                height: 100vh;
+                width: 100vw;
+                max-width: none;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            #gameTitle {
+                font-size: 2.5rem;
+            }
+
+            #startButton {
+                padding: 12px 30px;
+                font-size: 1.5rem;
+            }
+
+            #mathProblem {
+                font-size: 2.2rem;
+                margin: 20px 0;
+            }
+
+            .answer-btn {
+                font-size: 1.4rem;
+                padding: 12px;
+            }
+
+            #gameUI {
+                padding: 8px 10px;
+            }
+
+            #timer, #livesCount {
+                font-size: 1.2rem;
+            }
+
+            .heart {
+                width: 25px;
+                height: 25px;
+            }
+
+            #gameOverTitle {
+                font-size: 2.2rem;
+            }
+
+            #finalScore {
+                font-size: 1.6rem;
+            }
+
+            #restartButton, #exitButton {
+                padding: 10px 25px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Snowflakes will be added dynamically -->
+
+        <div id="startScreen">
+            <h1 id="gameTitle">Алісо, порахуй!</h1>
+            <button id="startButton">Почати гру</button>
+        </div>
+
+        <div id="gameScreen">
+            <div id="gameUI">
+                <div id="timer">Час: <span id="time">00:00</span></div>
+                <div id="livesContainer">
+                    <div class="heart"></div>
+                    <div id="livesCount">Життя: <span id="lives">3</span></div>
+                </div>
+            </div>
+
+            <div id="mathProblem">43 - 5 = ?</div>
+
+            <div id="answersContainer">
+                <button class="answer-btn" data-index="0">A</button>
+                <button class="answer-btn" data-index="1">B</button>
+                <button class="answer-btn" data-index="2">C</button>
+                <button class="answer-btn" data-index="3">D</button>
+            </div>
+        </div>
+
+        <div id="gameOverScreen">
+            <h2 id="gameOverTitle">Гра закінчена!</h2>
+            <div id="finalScore">
+                <div>Правильних відповідей: <span id="finalCorrect">0</span></div>
+                <div>Час гри: <span id="finalTime">00:00</span></div>
+            </div>
+            <button id="restartButton">Грати знову</button>
+            <button id="exitButton">Вийти</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create snowflakes
+            function createSnowflakes() {
+                const container = document.getElementById('gameContainer');
+                const snowflakeCount = window.innerWidth < 768 ? 30 : 50; // Fewer on mobile
+
+                for (let i = 0; i < snowflakeCount; i++) {
+                    const snowflake = document.createElement('div');
+                    snowflake.className = 'snowflake';
+                    snowflake.innerHTML = '❄';
+
+                    // Random position
+                    snowflake.style.left = Math.random() * 100 + 'vw';
+                    snowflake.style.top = Math.random() * -20 + 'vh';
+
+                    // Random size
+                    const size = Math.random() * 1.5 + 0.5;
+                    snowflake.style.fontSize = size + 'rem';
+
+                    // Random opacity
+                    snowflake.style.opacity = Math.random() * 0.7 + 0.3;
+
+                    // Random animation duration
+                    const duration = Math.random() * 10 + 5;
+                    snowflake.style.animation = `fall ${duration}s linear infinite`;
+
+                    // Random animation delay
+                    snowflake.style.animationDelay = Math.random() * 5 + 's';
+
+                    container.appendChild(snowflake);
+                }
+
+                // Add CSS for animation
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    @keyframes fall {
+                        to {
+                            transform: translateY(100vh) rotate(360deg);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Game elements
+            const startScreen = document.getElementById('startScreen');
+            const gameScreen = document.getElementById('gameScreen');
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            const startButton = document.getElementById('startButton');
+            const restartButton = document.getElementById('restartButton');
+            const exitButton = document.getElementById('exitButton');
+            const mathProblem = document.getElementById('mathProblem');
+            const answersContainer = document.getElementById('answersContainer');
+            const answerBtns = document.querySelectorAll('.answer-btn');
+            const livesElement = document.getElementById('lives');
+            const finalCorrectElement = document.getElementById('finalCorrect');
+            const finalTimeElement = document.getElementById('finalTime');
+            const timerElement = document.getElementById('time');
+            const livesContainer = document.getElementById('livesContainer');
+
+            // Game state
+            let gameState = {
+                lives: 3,
+                score: 0,
+                currentProblem: null,
+                correctAnswer: null,
+                gameActive: false,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                startTime: null,
+                timerInterval: null
+            };
+
+            // Format time as MM:SS
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            // Update the timer
+            function updateTimer() {
+                if (!gameState.startTime) return;
+
+                const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+                timerElement.textContent = formatTime(elapsed);
+            }
+
+            // Generate a math problem
+            function generateProblem() {
+                // For 2nd grade, we'll focus on addition and subtraction
+                const operation = Math.random() > 0.5 ? '+' : '-';
+                let num1, num2, result;
+
+                if (operation === '+') {
+                    // Addition: numbers between 10-50
+                    num1 = Math.floor(Math.random() * 41) + 10;
+                    num2 = Math.floor(Math.random() * 21) + 5;
+                    result = num1 + num2;
+                } else {
+                    // Subtraction: result should be positive
+                    num1 = Math.floor(Math.random() * 41) + 10;
+                    num2 = Math.floor(Math.random() * 10) + 1;
+                    // Ensure num1 > num2 to avoid negative results
+                    if (num2 > num1) [num1, num2] = [num2, num1];
+                    result = num1 - num2;
+                }
+
+                return {
+                    question: `${num1} ${operation} ${num2}`,
+                    answer: result
+                };
+            }
+
+            // Generate answers for the current problem
+            function generateAnswers(problem) {
+                // Store the correct answer
+                gameState.correctAnswer = problem.answer;
+
+                // Create an array with the correct answer
+                const answers = [problem.answer];
+
+                // Generate 3 incorrect answers
+                while (answers.length < 4) {
+                    let incorrectAnswer;
+                    do {
+                        // Generate a wrong answer (within a reasonable range)
+                        incorrectAnswer = problem.answer + (Math.floor(Math.random() * 10) - 5);
+                    } while (incorrectAnswer === problem.answer || incorrectAnswer < 0 || answers.includes(incorrectAnswer));
+
+                    answers.push(incorrectAnswer);
+                }
+
+                // Shuffle the answers
+                for (let i = answers.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [answers[i], answers[j]] = [answers[j], answers[i]];
+                }
+
+                return answers;
+            }
+
+            // Display the current problem and answers
+            function displayProblem() {
+                gameState.currentProblem = generateProblem();
+                mathProblem.textContent = `${gameState.currentProblem.question} = ?`;
+
+                const answers = generateAnswers(gameState.currentProblem);
+
+                // Assign answers to buttons
+                answerBtns.forEach((btn, index) => {
+                    btn.textContent = answers[index];
+                    btn.classList.remove('correct', 'incorrect');
+                    btn.disabled = false;
+                });
+            }
+
+            // Handle answer selection
+            function handleAnswer(index) {
+                if (!gameState.gameActive) return;
+
+                const selectedAnswer = parseInt(answerBtns[index].textContent);
+                const isCorrect = selectedAnswer === gameState.correctAnswer;
+
+                if (isCorrect) {
+                    // Correct answer
+                    gameState.correctAnswers++;
+                    answerBtns[index].classList.add('correct');
+                    showFeedback('✓', '#4CAF50');
+
+                    // Disable all buttons
+                    answerBtns.forEach(btn => btn.disabled = true);
+
+                    // Generate new problem after delay
+                    setTimeout(() => {
+                        displayProblem();
+                    }, 1000);
+                } else {
+                    // Incorrect answer
+                    gameState.lives--;
+                    gameState.incorrectAnswers++;
+                    livesElement.textContent = gameState.lives;
+
+                    answerBtns[index].classList.add('incorrect');
+
+                    // Highlight correct answer
+                    answerBtns.forEach((btn, i) => {
+                        if (parseInt(btn.textContent) === gameState.correctAnswer) {
+                            btn.classList.add('correct');
+                        }
+                    });
+
+                    showFeedback('✗', '#f44336');
+
+                    // Update lives display
+                    const hearts = document.querySelectorAll('.heart');
+                    if (hearts[3 - gameState.lives]) {
+                        hearts[3 - gameState.lives].style.opacity = '0.3';
+                    }
+
+                    // Disable all buttons
+                    answerBtns.forEach(btn => btn.disabled = true);
+
+                    // Check if game over
+                    if (gameState.lives <= 0) {
+                        setTimeout(() => {
+                            endGame();
+                        }, 1500);
+                    } else {
+                        // Generate new problem after delay
+                        setTimeout(() => {
+                            displayProblem();
+                        }, 1500);
+                    }
+                }
+            }
+
+            // Show feedback animation
+            function showFeedback(text, color) {
+                const feedback = document.createElement('div');
+                feedback.className = 'feedback';
+                feedback.textContent = text;
+                feedback.style.color = color;
+
+                gameScreen.appendChild(feedback);
+
+                // Remove after animation
+                setTimeout(() => {
+                    feedback.remove();
+                }, 1500);
+            }
+
+            // End the game
+            function endGame() {
+                gameState.gameActive = false;
+                clearInterval(gameState.timerInterval);
+
+                // Calculate final time
+                const finalTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+                finalTimeElement.textContent = formatTime(finalTime);
+
+                finalCorrectElement.textContent = gameState.correctAnswers;
+                gameOverScreen.style.display = 'flex';
+            }
+
+            // Start the game
+            function startGame() {
+                // Reset game state
+                gameState = {
+                    lives: 3,
+                    score: 0,
+                    currentProblem: null,
+                    correctAnswer: null,
+                    gameActive: true,
+                    correctAnswers: 0,
+                    incorrectAnswers: 0,
+                    startTime: Date.now(),
+                    timerInterval: null
+                };
+
+                // Reset UI
+                livesElement.textContent = '3';
+                const hearts = document.querySelectorAll('.heart');
+                hearts.forEach(heart => heart.style.opacity = '1');
+
+                // Start timer
+                gameState.timerInterval = setInterval(updateTimer, 1000);
+
+                // Display first problem
+                displayProblem();
+
+                // Hide start screen and show game screen
+                startScreen.style.display = 'none';
+                gameScreen.style.display = 'flex';
+            }
+
+            // Add event listeners to answer buttons
+            answerBtns.forEach((btn, index) => {
+                btn.addEventListener('click', () => handleAnswer(index));
+            });
+
+            // Event listeners
+            startButton.addEventListener('click', startGame);
+
+            restartButton.addEventListener('click', () => {
+                gameOverScreen.style.display = 'none';
+                startGame();
+            });
+
+            exitButton.addEventListener('click', () => {
+                gameOverScreen.style.display = 'none';
+                gameScreen.style.display = 'none';
+                startScreen.style.display = 'flex';
+            });
+
+            // Create snowflakes
+            createSnowflakes();
+        });
+    </script>
+</body>
+</html>
