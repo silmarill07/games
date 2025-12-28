@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Santas Math Flight</title>
+    <title>Алісо, порахуй!</title>
     <style>
         * {
             margin: 0;
@@ -12,11 +12,14 @@
             user-select: none;
         }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
             background: linear-gradient(135deg, #0a3d62, #1e3799);
-            height: 100vh;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -45,6 +48,7 @@
             user-select: none;
             z-index: 1;
             pointer-events: none;
+            animation: fall linear infinite;
         }
 
         #startScreen {
@@ -254,6 +258,12 @@
             100% { transform: translateY(-100px); opacity: 0; }
         }
 
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
         /* Mobile-specific styles */
         @media (max-width: 768px) {
             #gameContainer {
@@ -376,24 +386,13 @@
 
                     // Random animation duration
                     const duration = Math.random() * 10 + 5;
-                    snowflake.style.animation = `fall ${duration}s linear infinite`;
+                    snowflake.style.animationDuration = `${duration}s`;
 
                     // Random animation delay
                     snowflake.style.animationDelay = Math.random() * 5 + 's';
 
                     container.appendChild(snowflake);
                 }
-
-                // Add CSS for animation
-                const style = document.createElement('style');
-                style.innerHTML = `
-                    @keyframes fall {
-                        to {
-                            transform: translateY(100vh) rotate(360deg);
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
             }
 
             // Game elements
